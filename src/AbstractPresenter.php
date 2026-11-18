@@ -3,7 +3,9 @@
 namespace Zenekp\ArrayAccessPresenter;
 
 use ArrayAccess;
+use InvalidArgumentException;
 use RuntimeException;
+use Zenekp\ArrayAccessPresenter\Interfaces\PresenterInterface;
 
 abstract class AbstractPresenter
 {
@@ -60,9 +62,12 @@ abstract class AbstractPresenter
             return;
         }
 
+        $this->validatePresenterClass($presenterClass);
+
         $relationData = $this->relationData($relation);
         if ($this->isArrayable($relationData)) {
-            $this->$relation = new $presenterClass($relationData);
+            $presenter = new $presenterClass($relationData);
+            $this->$relation = $presenter;
         }
     }
 
@@ -74,6 +79,8 @@ abstract class AbstractPresenter
         if (! empty($this->$relation)) {
             return;
         }
+
+        $this->validatePresenterClass($presenterClass);
 
         $this->$relation = [];
         $collection = $this->relationData($relation);
@@ -89,7 +96,31 @@ abstract class AbstractPresenter
             if (is_array($item) && array_values($item) === $item) {
                 continue;
             }
-            $this->{$relation}[] = new $presenterClass($item);
+            $presenter = new $presenterClass($item);
+            $this->{$relation}[] = $presenter;
+        }
+    }
+
+    private function validatePresenterClass(string $presenterClass): void
+    {
+        if (
+            ! is_a($presenterClass, AbstractPresenter::class, true)
+            || ! is_a($presenterClass, PresenterInterface::class, true)
+        ) {
+            throw new InvalidArgumentException(sprintf(
+                'Presenter class "%s" must be concrete and implement "%s".',
+                $presenterClass,
+                PresenterInterface::class
+            ));
+        }
+
+        $reflection = new \ReflectionClass($presenterClass);
+        if (! $reflection->isInstantiable()) {
+            throw new InvalidArgumentException(sprintf(
+                'Presenter class "%s" must be concrete and implement "%s".',
+                $presenterClass,
+                PresenterInterface::class
+            ));
         }
     }
 
