@@ -25,10 +25,7 @@ abstract class AbstractPresenter
 
         if (str_starts_with($key, 'has_')) {
             $attribute = substr($key, 4);
-
-            return $this->hasKey($attribute)
-                ? ! empty($this->getValue($attribute))
-                : false;
+            return $this->hasKey($attribute) && !empty($this->getValue($attribute));
         }
 
         $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
