@@ -3,6 +3,7 @@
 namespace Zenekp\ArrayAccessPresenter\Tests;
 
 use ArrayObject;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;
@@ -181,6 +182,42 @@ class AbstractPresenterTest extends TestCase
         $this->assertCount(1, $presenter->comments());
         $this->assertSame('Grace', $presenter->comments()[0]->displayName());
     }
+
+    public function test_single_relation_rejects_presenter_without_interface(): void
+    {
+        $presenter = new TestPresenter([
+            'invalid_author' => ['display_name' => 'Ada'],
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be concrete and implement');
+
+        $presenter->invalidAuthor();
+    }
+
+    public function test_collection_relation_rejects_presenter_without_interface(): void
+    {
+        $presenter = new TestPresenter([
+            'invalid_comments' => [['display_name' => 'Grace']],
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be concrete and implement');
+
+        $presenter->invalidComments();
+    }
+
+    public function test_relation_rejects_abstract_presenter_class(): void
+    {
+        $presenter = new TestPresenter([
+            'abstract_author' => ['display_name' => 'Ada'],
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be concrete and implement');
+
+        $presenter->abstractAuthor();
+    }
 }
 
 class TestPresenter extends AbstractPresenter implements PresenterInterface
@@ -192,6 +229,12 @@ class TestPresenter extends AbstractPresenter implements PresenterInterface
     protected ?AuthorPresenter $primaryAuthor = null;
 
     protected ?array $reviewers = [];
+
+    protected ?InvalidPresenter $invalidAuthor = null;
+
+    protected ?array $invalidComments = [];
+
+    protected mixed $abstractAuthor = null;
 
     public function author(): ?AuthorPresenter
     {
@@ -220,8 +263,33 @@ class TestPresenter extends AbstractPresenter implements PresenterInterface
 
         return $this->reviewers;
     }
+
+    public function invalidAuthor(): ?InvalidPresenter
+    {
+        $this->setRelationPresenter(__FUNCTION__, InvalidPresenter::class);
+
+        return $this->invalidAuthor;
+    }
+
+    public function invalidComments(): array
+    {
+        $this->setCollectionRelationPresenters(__FUNCTION__, InvalidPresenter::class);
+
+        return $this->invalidComments;
+    }
+
+    public function abstractAuthor(): mixed
+    {
+        $this->setRelationPresenter(__FUNCTION__, AbstractInvalidPresenter::class);
+
+        return $this->abstractAuthor;
+    }
 }
 
 class AuthorPresenter extends AbstractPresenter implements PresenterInterface {}
 
 class CommentPresenter extends AbstractPresenter implements PresenterInterface {}
+
+class InvalidPresenter extends AbstractPresenter {}
+
+abstract class AbstractInvalidPresenter extends AbstractPresenter implements PresenterInterface {}
