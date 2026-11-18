@@ -3,16 +3,16 @@
 namespace Zenekp\ArrayAccessPresenter\Tests;
 
 use ArrayObject;
-use stdClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use stdClass;
 use TypeError;
 use Zenekp\ArrayAccessPresenter\AbstractPresenter;
 use Zenekp\ArrayAccessPresenter\Interfaces\PresenterInterface;
 
 class AbstractPresenterTest extends TestCase
 {
-    public function testGetDataReturnsTheProvidedArray(): void
+    public function test_get_data_returns_the_provided_array(): void
     {
         $data = ['display_name' => 'Ada'];
         $presenter = new TestPresenter($data);
@@ -20,7 +20,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame($data, $presenter->getData());
     }
 
-    public function testMagicCallUsesSnakeCaseForArrayData(): void
+    public function test_magic_call_uses_snake_case_for_array_data(): void
     {
         $presenter = new TestPresenter([
             'display_name' => 'Ada',
@@ -31,7 +31,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertTrue($presenter->active());
     }
 
-    public function testMagicCallReadsArrayAccessData(): void
+    public function test_magic_call_reads_array_access_data(): void
     {
         $presenter = new TestPresenter(new ArrayObject([
             'display_name' => 'Ada',
@@ -40,7 +40,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame('Ada', $presenter->displayName());
     }
 
-    public function testHasMagicCallReportsWhetherAValueIsNonEmpty(): void
+    public function test_has_magic_call_reports_whether_a_value_is_non_empty(): void
     {
         $presenter = new TestPresenter([
             'name' => 'Ada',
@@ -51,7 +51,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertFalse($presenter->hasNickname());
     }
 
-    public function testMissingMagicCallThrowsRuntimeException(): void
+    public function test_missing_magic_call_throws_runtime_exception(): void
     {
         $presenter = new TestPresenter([]);
 
@@ -61,7 +61,7 @@ class AbstractPresenterTest extends TestCase
         $presenter->missingValue();
     }
 
-    public function testHasMagicCallReturnsFalseForMissingKeys(): void
+    public function test_has_magic_call_returns_false_for_missing_keys(): void
     {
         $presenter = new TestPresenter([]);
 
@@ -69,7 +69,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertFalse($presenter->hasMissingValue());
     }
 
-    public function testMagicCallPreservesNullZeroFalseAndEmptyValues(): void
+    public function test_magic_call_preserves_null_zero_false_and_empty_values(): void
     {
         $presenter = new TestPresenter([
             'null_value' => null,
@@ -84,7 +84,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame('', $presenter->emptyValue());
     }
 
-    public function testMagicCallUsesAcronymAwareSnakeCase(): void
+    public function test_magic_call_uses_acronym_aware_snake_case(): void
     {
         $presenter = new TestPresenter([
             'http_status' => 204,
@@ -95,7 +95,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame('key', $presenter->xmlApiKey());
     }
 
-    public function testMissingArrayAccessOffsetThrowsRuntimeException(): void
+    public function test_missing_array_access_offset_throws_runtime_exception(): void
     {
         $presenter = new TestPresenter(new ArrayObject(['present' => 'value']));
 
@@ -105,14 +105,14 @@ class AbstractPresenterTest extends TestCase
         $presenter->missing();
     }
 
-    public function testConstructorRejectsUnsupportedDataTypes(): void
+    public function test_constructor_rejects_unsupported_data_types(): void
     {
         $this->expectException(TypeError::class);
 
-        new TestPresenter(new stdClass());
+        new TestPresenter(new stdClass);
     }
 
-    public function testPresenterAndCollectionRelations(): void
+    public function test_presenter_and_collection_relations(): void
     {
         $presenter = new TestPresenter([
             'author' => ['display_name' => 'Ada'],
@@ -127,7 +127,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame('Grace', $presenter->comments()[0]->displayName());
     }
 
-    public function testRelationSupportsSnakeCaseKeysAndArrayAccessData(): void
+    public function test_relation_supports_snake_case_keys_and_array_access_data(): void
     {
         $presenter = new TestPresenter(new ArrayObject([
             'primary_author' => new ArrayObject(['display_name' => 'Ada']),
@@ -142,7 +142,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame('Grace', $presenter->reviewers()[0]->displayName());
     }
 
-    public function testScalarAndMissingRelationsReturnTypedDefaults(): void
+    public function test_scalar_and_missing_relations_return_typed_defaults(): void
     {
         $presenter = new TestPresenter([
             'author' => 'Ada',
@@ -154,7 +154,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame([], $presenter->comments());
     }
 
-    public function testRelationIsResolvedOnlyOnce(): void
+    public function test_relation_is_resolved_only_once(): void
     {
         $presenter = new TestPresenter([
             'author' => ['display_name' => 'Ada'],
@@ -166,7 +166,7 @@ class AbstractPresenterTest extends TestCase
         $this->assertSame($first, $second);
     }
 
-    public function testCollectionIgnoresNullScalarAndNestedCollections(): void
+    public function test_collection_ignores_null_scalar_and_nested_collections(): void
     {
         $presenter = new TestPresenter([
             'comments' => [
@@ -196,34 +196,32 @@ class TestPresenter extends AbstractPresenter implements PresenterInterface
     public function author(): ?AuthorPresenter
     {
         $this->setRelationPresenter(__FUNCTION__, AuthorPresenter::class);
+
         return $this->author;
     }
 
     public function comments()
     {
         $this->setCollectionRelationPresenters(__FUNCTION__, CommentPresenter::class);
+
         return $this->comments;
     }
 
     public function primaryAuthor(): ?AuthorPresenter
     {
         $this->setRelationPresenter(__FUNCTION__, AuthorPresenter::class);
+
         return $this->primaryAuthor;
     }
 
     public function reviewers(): array
     {
         $this->setCollectionRelationPresenters(__FUNCTION__, CommentPresenter::class);
+
         return $this->reviewers;
     }
 }
 
-class AuthorPresenter extends AbstractPresenter implements PresenterInterface
-{
+class AuthorPresenter extends AbstractPresenter implements PresenterInterface {}
 
-}
-
-class CommentPresenter extends AbstractPresenter implements PresenterInterface
-{
-
-}
+class CommentPresenter extends AbstractPresenter implements PresenterInterface {}

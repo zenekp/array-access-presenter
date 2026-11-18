@@ -25,7 +25,8 @@ abstract class AbstractPresenter
 
         if (str_starts_with($key, 'has_')) {
             $attribute = substr($key, 4);
-            return $this->hasKey($attribute) && !empty($this->getValue($attribute));
+
+            return $this->hasKey($attribute) && ! empty($this->getValue($attribute));
         }
 
         $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
@@ -51,11 +52,11 @@ abstract class AbstractPresenter
     }
 
     /**
-     * @param class-string<AbstractPresenter> $presenterClass
+     * @param  class-string<AbstractPresenter>  $presenterClass
      */
     protected function setRelationPresenter(string $relation, string $presenterClass): void
     {
-        if (!empty($this->$relation)) {
+        if (! empty($this->$relation)) {
             return;
         }
 
@@ -66,24 +67,23 @@ abstract class AbstractPresenter
     }
 
     /**
-     * @param class-string<AbstractPresenter> $presenterClass
+     * @param  class-string<AbstractPresenter>  $presenterClass
      */
     protected function setCollectionRelationPresenters(string $relation, string $presenterClass): void
     {
-        if (!empty($this->$relation)) {
+        if (! empty($this->$relation)) {
             return;
         }
 
         $this->$relation = [];
         $collection = $this->relationData($relation);
 
-        if (!$this->isArrayable($collection)) {
+        if (! $this->isArrayable($collection)) {
             return;
         }
 
         foreach ($collection as $item) {
-            if (!$this->isArrayable($item))
-            {
+            if (! $this->isArrayable($item)) {
                 continue;
             }
             if (is_array($item) && array_values($item) === $item) {
