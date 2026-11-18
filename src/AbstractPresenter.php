@@ -4,6 +4,8 @@ namespace Zenekp\ArrayAccessPresenter;
 
 use ArrayAccess;
 use InvalidArgumentException;
+use ReflectionClass;
+use ReflectionException;
 use RuntimeException;
 use Zenekp\ArrayAccessPresenter\Interfaces\PresenterInterface;
 
@@ -55,6 +57,7 @@ abstract class AbstractPresenter
 
     /**
      * @param  class-string<AbstractPresenter>  $presenterClass
+     * @throws ReflectionException
      */
     protected function setRelationPresenter(string $relation, string $presenterClass): void
     {
@@ -73,6 +76,7 @@ abstract class AbstractPresenter
 
     /**
      * @param  class-string<AbstractPresenter>  $presenterClass
+     * @throws ReflectionException
      */
     protected function setCollectionRelationPresenters(string $relation, string $presenterClass): void
     {
@@ -101,6 +105,9 @@ abstract class AbstractPresenter
         }
     }
 
+    /**
+     * @throws ReflectionException
+     */
     private function validatePresenterClass(string $presenterClass): void
     {
         if (
@@ -114,7 +121,7 @@ abstract class AbstractPresenter
             ));
         }
 
-        $reflection = new \ReflectionClass($presenterClass);
+        $reflection = new ReflectionClass($presenterClass);
         if (! $reflection->isInstantiable()) {
             throw new InvalidArgumentException(sprintf(
                 'Presenter class "%s" must be concrete and implement "%s".',
