@@ -7,3 +7,4 @@ Homestead.json
 .DS_Store
 .sizecache.json
 package-lock.json
+.phpunit.cache
